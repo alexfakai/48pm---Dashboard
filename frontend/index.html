@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>48 Property Marketing Dashboard</title>
+    
+    <!-- Critical CSS for above-the-fold content -->
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background-color:#0a0e27;color:#fff;overflow-x:hidden;display:grid;grid-template-columns:320px 1fr 400px;grid-template-rows:80px 1fr;grid-template-areas:"header header header" "filter map details";min-height:100vh}
+        header{grid-area:header;position:fixed;top:0;left:0;right:0;height:80px;padding:24px 48px;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.03);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.1);z-index:1000}
+        header .logo{font-size:48px;font-weight:700;color:#d4af37;letter-spacing:0.02em}
+        header .tagline{font-size:18px;color:rgba(255,255,255,0.7);font-style:italic}
+        .filter-panel{grid-area:filter;position:fixed;top:80px;left:0;width:320px;height:calc(100vh - 80px);padding:32px 24px;background:rgba(255,255,255,0.05);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-right:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.3);overflow-y:auto;z-index:100}
+        .map-display{grid-area:map;position:fixed;top:80px;left:320px;width:calc(100vw - 320px - 400px);height:calc(100vh - 80px);padding:48px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+        .details-panel{grid-area:details;position:fixed;top:80px;right:0;width:400px;height:calc(100vh - 80px);padding:32px 24px;background:rgba(255,255,255,0.05);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-left:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.3);overflow-y:auto;z-index:100}
+    </style>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">48.</div>
+        <div class="tagline">Everything under the sun is negotiable</div>
+    </header>
+
+    <aside class="filter-panel">
+        <section class="filter-section">
+            <h2>Property Type</h2>
+            <div class="filter-buttons">
+                <button class="filter-btn" data-filter="type" data-value="duplex">Duplex</button>
+                <button class="filter-btn" data-filter="type" data-value="apartment">Apartment</button>
+                <button class="filter-btn" data-filter="type" data-value="bungalow">Bungalow</button>
+                <button class="filter-btn" data-filter="type" data-value="terrace">Terrace</button>
+            </div>
+        </section>
+
+        <section class="filter-section">
+            <h2>Location</h2>
+            <div class="filter-buttons">
+                <button class="filter-btn location-btn" data-filter="location" data-value="kuje">Kuje</button>
+                <button class="filter-btn location-btn" data-filter="location" data-value="idu">Idu</button>
+                <button class="filter-btn location-btn" data-filter="location" data-value="bwari">Bwari</button>
+                <button class="filter-btn location-btn" data-filter="location" data-value="lokogoma">Lokogoma</button>
+            </div>
+        </section>
+
+        <section class="filter-section">
+            <h2>Price</h2>
+            <div class="filter-buttons">
+                <button class="filter-btn" data-filter="price" data-value="<50M">Less than 50M</button>
+                <button class="filter-btn" data-filter="price" data-value="<100M">Less than 100M</button>
+                <button class="filter-btn" data-filter="price" data-value="<200M">Less than 200M</button>
+                <button class="filter-btn" data-filter="price" data-value=">200M">Greater than 200M</button>
+            </div>
+        </section>
+
+        <section class="filter-section">
+            <h2>Payment</h2>
+            <div class="filter-buttons">
+                <button class="filter-btn" data-filter="payment" data-value="mortgage">Mortgage</button>
+                <button class="filter-btn" data-filter="payment" data-value="outright">Outright</button>
+                <button class="filter-btn" data-filter="payment" data-value="installment">Installment</button>
+            </div>
+        </section>
+    </aside>
+
+    <main class="map-display">
+        <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+            <!-- Stylized Abuja Map -->
+            <defs>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            
+            <!-- Grid lines -->
+            <g class="grid-lines" opacity="0.1">
+                <line x1="0" y1="150" x2="800" y2="150" stroke="#ffffff" stroke-width="1"/>
+                <line x1="0" y1="300" x2="800" y2="300" stroke="#ffffff" stroke-width="1"/>
+                <line x1="0" y1="450" x2="800" y2="450" stroke="#ffffff" stroke-width="1"/>
+                <line x1="200" y1="0" x2="200" y2="600" stroke="#ffffff" stroke-width="1"/>
+                <line x1="400" y1="0" x2="400" y2="600" stroke="#ffffff" stroke-width="1"/>
+                <line x1="600" y1="0" x2="600" y2="600" stroke="#ffffff" stroke-width="1"/>
+            </g>
+
+            <!-- Location Zones -->
+            <path id="zone-kuje" class="map-zone" data-location="kuje"
+                  d="M 50 350 L 150 300 L 250 350 L 200 450 L 80 420 Z"
+                  fill="rgba(255, 255, 255, 0.1)" stroke="rgba(255, 255, 255, 0.2)" stroke-width="2"/>
+            <text x="150" y="380" class="zone-label" fill="#ffffff" font-size="18" text-anchor="middle">Kuje</text>
+
+            <path id="zone-idu" class="map-zone" data-location="idu"
+                  d="M 280 150 L 400 120 L 480 180 L 450 280 L 320 260 Z"
+                  fill="rgba(255, 255, 255, 0.1)" stroke="rgba(255, 255, 255, 0.2)" stroke-width="2"/>
+            <text x="380" y="210" class="zone-label" fill="#ffffff" font-size="18" text-anchor="middle">Idu</text>
+
+            <path id="zone-bwari" class="map-zone" data-location="bwari"
+                  d="M 520 80 L 650 100 L 700 200 L 620 250 L 500 200 Z"
+                  fill="rgba(255, 255, 255, 0.1)" stroke="rgba(255, 255, 255, 0.2)" stroke-width="2"/>
+            <text x="600" y="170" class="zone-label" fill="#ffffff" font-size="18" text-anchor="middle">Bwari</text>
+
+            <path id="zone-lokogoma" class="map-zone" data-location="lokogoma"
+                  d="M 450 350 L 580 320 L 680 400 L 620 500 L 480 480 Z"
+                  fill="rgba(255, 255, 255, 0.1)" stroke="rgba(255, 255, 255, 0.2)" stroke-width="2"/>
+            <text x="570" y="410" class="zone-label" fill="#ffffff" font-size="18" text-anchor="middle">Lokogoma</text>
+
+            <!-- Abstract road patterns -->
+            <g class="roads" opacity="0.15">
+                <path d="M 0 300 Q 400 280 800 300" stroke="#ffffff" stroke-width="3" fill="none"/>
+                <path d="M 400 0 Q 380 300 400 600" stroke="#ffffff" stroke-width="3" fill="none"/>
+            </g>
+        </svg>
+    </main>
+
+    <aside class="details-panel">
+        <div class="placeholder">
+            <p>Select a location to view properties</p>
+        </div>
+        <div class="property-cards"></div>
+    </aside>
+
+    <!-- Property Card Template -->
+    <template id="property-card-template">
+        <div class="property-card">
+            <div class="property-image">
+                <div class="property-type-badge"></div>
+            </div>
+            <div class="property-content">
+                <h3 class="property-title"></h3>
+                <div class="property-price"></div>
+                <div class="property-payment-options"></div>
+                <div class="property-details">
+                    <span class="detail-item bedrooms"></span>
+                    <span class="detail-item bathrooms"></span>
+                    <span class="detail-item area"></span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="app.js"></script>
+</body>
+</html>
