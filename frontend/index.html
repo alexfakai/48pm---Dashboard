@@ -21,6 +21,13 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Auth check script - runs before page loads -->
+    <script src="auth.js"></script>
+    <script>
+        // Check authentication before showing page
+        checkAuth();
+    </script>
+    
     <header>
         <div class="brand-lockup">
             <div class="logo">48.</div>
@@ -29,6 +36,13 @@
         <div class="header-status">
             <span class="status-indicator"></span>
             <span class="status-text">Live</span>
+            <button class="logout-btn" id="logoutBtn" title="Logout">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M13 3L17 7L13 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M17 7H7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M7 17H3V3H7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
         </div>
     </header>
 
