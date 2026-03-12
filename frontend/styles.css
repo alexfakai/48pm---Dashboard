@@ -32,8 +32,10 @@ button {
 
 /* CSS Custom Properties */
 :root {
-  /* Color Palette */
-  --color-background: #0a0e27;
+  /* Color Palette - Updated to match logo blue gradient */
+  --color-background: #1a2847;
+  --color-background-dark: #0f1829;
+  --color-background-light: #243a5e;
   --color-primary-accent: #d4af37;
   --color-secondary-accent: #f8f9fa;
   --color-glass-bg: rgba(255, 255, 255, 0.05);
@@ -106,7 +108,8 @@ button {
 /* Base Styles */
 body {
   font-family: var(--font-family);
-  background-color: var(--color-background);
+  background: linear-gradient(135deg, #1a2847 0%, #0f1829 50%, #243a5e 100%);
+  background-attachment: fixed;
   color: var(--color-text-primary);
   overflow-x: hidden;
   display: grid;
@@ -331,7 +334,7 @@ header .logo .logo-img {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: radial-gradient(circle at center, #1a1f3a 0%, #0d1020 70%, #050810 100%);
+  background: radial-gradient(circle at center, #243a5e 0%, #1a2847 50%, #0f1829 100%);
 }
 
 .map-display svg {
