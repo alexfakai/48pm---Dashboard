@@ -144,15 +144,11 @@ header {
 }
 
 header .logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo-svg {
-  height: 50px;
-  width: auto;
-  filter: drop-shadow(0 2px 4px rgba(212, 175, 55, 0.3));
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-accent);
+  letter-spacing: 0.02em;
+  line-height: 1;
 }
 
 header .tagline {
