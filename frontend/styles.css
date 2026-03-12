@@ -152,8 +152,6 @@ header .logo {
 header .logo .logo-img {
   height: 50px;
   width: auto;
-  filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(212, 175, 55, 0.3));
-  mix-blend-mode: screen;
 }
 
 header .tagline {
