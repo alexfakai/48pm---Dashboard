@@ -231,6 +231,18 @@ header .tagline {
   transform: translateY(0);
 }
 
+/* Logo Styling */
+header .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+header .logo .logo-img {
+  height: 45px;
+  width: auto;
+}
+
 /* Filter Panel Component */
 .filter-panel {
   grid-area: filter;
