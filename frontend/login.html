@@ -28,12 +28,16 @@
             text-align: center;
         }
 
-        .logo {
-            font-size: 72px;
-            font-weight: 700;
-            color: #d4af37;
-            letter-spacing: 0.02em;
-            margin-bottom: 16px;
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .logo-img {
+            height: 100px;
+            width: auto;
+            filter: drop-shadow(0 4px 8px rgba(212, 175, 55, 0.4));
         }
 
         .subtitle {
@@ -203,7 +207,9 @@
 </head>
 <body>
     <div class="login-container">
-        <div class="logo">48.</div>
+        <div class="logo-container">
+            <img src="48logo.jpg" alt="48 Logo" class="logo-img">
+        </div>
         <div class="subtitle">Property Marketing Dashboard</div>
         <div class="tagline">Everything under the sun is negotiable</div>
 
