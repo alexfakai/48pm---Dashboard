@@ -1,6 +1,17 @@
 // 48 Property Marketing Dashboard - Interactive Features
 
-// Filter state management
+// ============================================================
+// GIDDA API CONFIGURATION
+// ============================================================
+const GIDDA_API = {
+  baseUrl: 'https://dev-api.giddaa.com/houses/48-marketing/get-all',
+  secretKey: 'replace-with-a-strong-external-connection-key',
+  pageSize: 100
+};
+
+// ============================================================
+// FILTER STATE
+// ============================================================
 const filterState = {
   propertyTypes: [],
   locations: [],
@@ -251,6 +262,88 @@ function initializeClearAllHandler() {
   });
 }
 
+// ============================================================
+// GIDDA API - Fetch and map real property data
+// ============================================================
+let allProperties = [...mockProperties]; // Start with mock, replace when API loads
+
+// Map Gidda API response to our property format
+function mapGiddaProperty(house) {
+  // Parse media (JSON string of images)
+  let images = [];
+  try {
+    const media = JSON.parse(house.media || '[]');
+    images = Array.isArray(media) ? media.map(m => m.document || m.url || m).filter(Boolean) : [];
+  } catch (e) {
+    images = [];
+  }
+
+  // Map payment plans from plans array
+  const paymentOptions = (house.plans || []).map(plan => {
+    const name = (plan.name || '').toLowerCase();
+    if (name.includes('mortgage')) return 'mortgage';
+    if (name.includes('outright')) return 'outright';
+    if (name.includes('installment') || name.includes('instalment')) return 'installment';
+    return plan.name;
+  }).filter(Boolean);
+
+  // Determine price category
+  const priceInMillions = house.price / 1000000;
+  let priceCategory = '>200M';
+  if (priceInMillions < 50) priceCategory = '<50M';
+  else if (priceInMillions < 100) priceCategory = '<100M';
+  else if (priceInMillions < 200) priceCategory = '<200M';
+
+  // Normalize location (city or state, lowercase)
+  const location = (house.city || house.state || '').toLowerCase().trim();
+
+  return {
+    id: house.id,
+    title: house.name,
+    type: (house.type?.name || '').toLowerCase(),
+    location: location,
+    price: house.price,
+    priceCategory,
+    paymentOptions: paymentOptions.length > 0 ? paymentOptions : ['outright'],
+    bedrooms: house.bedrooms || 0,
+    bathrooms: house.bathrooms || 0,
+    squareMeters: house.squareMeters || 0,
+    images,
+    estateName: house.estateName,
+    segment: house.segment?.name,
+    completionStatus: house.completionStatus?.name
+  };
+}
+
+// Fetch properties from Gidda API
+async function fetchGiddaProperties() {
+  try {
+    const url = `${GIDDA_API.baseUrl}?pageNumber=1&pageSize=${GIDDA_API.pageSize}`;
+    const response = await fetch(url, {
+      headers: {
+        'x-secret-key': GIDDA_API.secretKey,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+    const data = await response.json();
+
+    // Decrypt if needed (placeholder - update when decryption method confirmed)
+    const rawValue = data.Value || data.value || data;
+    const houses = Array.isArray(rawValue) ? rawValue : (rawValue?.items || rawValue?.data || []);
+
+    if (houses.length > 0) {
+      allProperties = houses.map(mapGiddaProperty);
+      console.log(`Loaded ${allProperties.length} properties from Gidda API`);
+    }
+  } catch (error) {
+    console.warn('Using mock data - API not available:', error.message);
+    allProperties = [...mockProperties];
+  }
+}
+
 // Apply all filters to properties
 function applyAllFilters() {
   // If no filters are selected, show placeholder
@@ -265,7 +358,7 @@ function applyAllFilters() {
   }
   
   // Filter properties based on all active filters
-  let filteredProperties = mockProperties;
+  let filteredProperties = allProperties;
   
   // Filter by property type
   if (filterState.propertyTypes.length > 0) {
@@ -769,7 +862,7 @@ function initializeLocationHandlers() {
 
 
 // Initialize all handlers when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   initializeFilterHandlers();
   initializeMapZones();
   initializeLocationHandlers();
@@ -778,4 +871,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Show placeholder initially
   showPlaceholder();
+
+  // Fetch real data from Gidda API (falls back to mock if unavailable)
+  await fetchGiddaProperties();
 });
