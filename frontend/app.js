@@ -339,9 +339,24 @@ async function fetchGiddaProperties() {
     // Parse the Value field - Gidda returns { StatusCode, Message, Value }
     const rawValue = data.Value || data.value || data;
     console.log('Raw value:', rawValue);
+    console.log('Raw value keys:', Object.keys(rawValue));
     
-    const houses = Array.isArray(rawValue) ? rawValue : (rawValue?.items || rawValue?.data || rawValue?.value || []);
-    console.log('Houses found:', houses.length);
+    // Gidda paginates - the array is likely in rawValue.value or rawValue.items or rawValue.data
+    let houses = [];
+    if (Array.isArray(rawValue)) {
+      houses = rawValue;
+    } else if (Array.isArray(rawValue?.value)) {
+      houses = rawValue.value;
+    } else if (Array.isArray(rawValue?.items)) {
+      houses = rawValue.items;
+    } else if (Array.isArray(rawValue?.data)) {
+      houses = rawValue.data;
+    } else if (Array.isArray(rawValue?.houses)) {
+      houses = rawValue.houses;
+    } else if (Array.isArray(rawValue?.results)) {
+      houses = rawValue.results;
+    }
+    console.log('Houses array:', houses.length, houses[0]);
 
     if (houses.length > 0) {
       allProperties = houses.map(mapGiddaProperty);
