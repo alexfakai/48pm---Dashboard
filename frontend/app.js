@@ -265,7 +265,7 @@ function initializeClearAllHandler() {
 // ============================================================
 // GIDDA API - Fetch and map real property data
 // ============================================================
-let allProperties = [...mockProperties]; // Start with mock, replace when API loads
+let allProperties = []; // Will be populated on DOMContentLoaded
 
 // Map Gidda API response to our property format
 function mapGiddaProperty(house) {
@@ -863,6 +863,9 @@ function initializeLocationHandlers() {
 
 // Initialize all handlers when DOM is ready
 document.addEventListener('DOMContentLoaded', async function() {
+  // Load mock data immediately as fallback
+  allProperties = [...mockProperties];
+
   initializeFilterHandlers();
   initializeMapZones();
   initializeLocationHandlers();
