@@ -340,21 +340,51 @@ async function fetchGiddaProperties() {
     const rawValue = data.Value || data.value || data;
     console.log('Raw value:', rawValue);
     console.log('Raw value keys:', Object.keys(rawValue));
-    
-    // Gidda paginates - the array is likely in rawValue.value or rawValue.items or rawValue.data
+
+    // The inner value is encrypted - decrypt it using AES
+    let decryptedValue;
+    try {
+      const encryptedString = rawValue.value || rawValue.Value;
+      
+      // Use Web Crypto API to decrypt AES-CBC
+      const keyData = new TextEncoder().encode(GIDDA_API.secretKey.padEnd(32, '0').slice(0, 32));
+      const cryptoKey = await crypto.subtle.importKey(
+        'raw', keyData, { name: 'AES-CBC' }, false, ['decrypt']
+      );
+
+      // Decode base64
+      const encryptedBytes = Uint8Array.from(atob(encryptedString), c => c.charCodeAt(0));
+      
+      // First 16 bytes are IV, rest is ciphertext
+      const iv = encryptedBytes.slice(0, 16);
+      const ciphertext = encryptedBytes.slice(16);
+
+      const decryptedBuffer = await crypto.subtle.decrypt(
+        { name: 'AES-CBC', iv }, cryptoKey, ciphertext
+      );
+
+      decryptedValue = JSON.parse(new TextDecoder().decode(decryptedBuffer));
+      console.log('Decrypted value:', decryptedValue);
+    } catch (decryptError) {
+      console.warn('Decryption failed:', decryptError.message);
+      decryptedValue = null;
+    }
+
+    // Extract houses from decrypted data
     let houses = [];
-    if (Array.isArray(rawValue)) {
-      houses = rawValue;
-    } else if (Array.isArray(rawValue?.value)) {
-      houses = rawValue.value;
-    } else if (Array.isArray(rawValue?.items)) {
-      houses = rawValue.items;
-    } else if (Array.isArray(rawValue?.data)) {
-      houses = rawValue.data;
-    } else if (Array.isArray(rawValue?.houses)) {
-      houses = rawValue.houses;
-    } else if (Array.isArray(rawValue?.results)) {
-      houses = rawValue.results;
+    const source = decryptedValue || rawValue;
+    if (Array.isArray(source)) {
+      houses = source;
+    } else if (Array.isArray(source?.value)) {
+      houses = source.value;
+    } else if (Array.isArray(source?.items)) {
+      houses = source.items;
+    } else if (Array.isArray(source?.data)) {
+      houses = source.data;
+    } else if (Array.isArray(source?.houses)) {
+      houses = source.houses;
+    } else if (Array.isArray(source?.results)) {
+      houses = source.results;
     }
     console.log('Houses array:', houses.length, houses[0]);
 
