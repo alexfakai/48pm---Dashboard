@@ -317,8 +317,11 @@ function mapGiddaProperty(house) {
 
 // Fetch properties from Gidda API
 async function fetchGiddaProperties() {
+  console.log('Fetching properties from Gidda API...');
   try {
     const url = `${GIDDA_API.baseUrl}?pageNumber=1&pageSize=${GIDDA_API.pageSize}`;
+    console.log('API URL:', url);
+    
     const response = await fetch(url, {
       headers: {
         'x-secret-key': GIDDA_API.secretKey,
@@ -326,20 +329,29 @@ async function fetchGiddaProperties() {
       }
     });
 
+    console.log('API Response status:', response.status);
+
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
+    console.log('Raw API response:', data);
 
-    // Decrypt if needed (placeholder - update when decryption method confirmed)
+    // Parse the Value field - Gidda returns { StatusCode, Message, Value }
     const rawValue = data.Value || data.value || data;
-    const houses = Array.isArray(rawValue) ? rawValue : (rawValue?.items || rawValue?.data || []);
+    console.log('Raw value:', rawValue);
+    
+    const houses = Array.isArray(rawValue) ? rawValue : (rawValue?.items || rawValue?.data || rawValue?.value || []);
+    console.log('Houses found:', houses.length);
 
     if (houses.length > 0) {
       allProperties = houses.map(mapGiddaProperty);
-      console.log(`Loaded ${allProperties.length} properties from Gidda API`);
+      console.log(`✅ Loaded ${allProperties.length} properties from Gidda API`);
+    } else {
+      console.warn('No houses in response, using mock data');
+      allProperties = [...mockProperties];
     }
   } catch (error) {
-    console.warn('Using mock data - API not available:', error.message);
+    console.warn('⚠️ Using mock data - API error:', error.message);
     allProperties = [...mockProperties];
   }
 }
