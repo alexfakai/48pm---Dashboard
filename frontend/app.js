@@ -5,9 +5,45 @@
 // ============================================================
 const GIDDA_API = {
   baseUrl: 'https://dev-api.giddaa.com/houses/48-marketing/get-all',
-  secretKey: 'replace-with-a-strong-external-connection-key',
+  secretKey: 'replace-with-a-strong-external-connection-key', // Replace with actual key
   pageSize: 100
 };
+
+// AES-GCM Decryption using Web Crypto API
+async function decryptAESGCM(encryptedBase64, secretKeyString) {
+  try {
+    // Decode base64 encrypted data
+    const encryptedBytes = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+
+    // The first 12 bytes are the IV (nonce), rest is ciphertext
+    const iv = encryptedBytes.slice(0, 12);
+    const ciphertext = encryptedBytes.slice(12);
+
+    // Import the secret key
+    const keyBytes = new TextEncoder().encode(secretKeyString.padEnd(32, '0').slice(0, 32));
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      keyBytes,
+      { name: 'AES-GCM' },
+      false,
+      ['decrypt']
+    );
+
+    // Decrypt
+    const decryptedBuffer = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      cryptoKey,
+      ciphertext
+    );
+
+    // Convert to string and parse JSON
+    const decryptedText = new TextDecoder().decode(decryptedBuffer);
+    return JSON.parse(decryptedText);
+  } catch (error) {
+    console.error('Decryption failed:', error.message);
+    return null;
+  }
+}
 
 // ============================================================
 // FILTER STATE
@@ -330,63 +366,36 @@ async function fetchGiddaProperties() {
     });
 
     console.log('API Response status:', response.status);
-
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
     console.log('Raw API response:', data);
 
-    // Parse the Value field - Gidda returns { StatusCode, Message, Value }
+    // Gidda returns { statusCode, message, value } where value is AES-GCM encrypted
     const rawValue = data.Value || data.value || data;
-    console.log('Raw value:', rawValue);
-    console.log('Raw value keys:', Object.keys(rawValue));
+    const encryptedString = rawValue?.value || rawValue?.Value;
 
-    // The inner value is encrypted - decrypt it using AES
-    let decryptedValue;
-    try {
-      const encryptedString = rawValue.value || rawValue.Value;
-      
-      // Use Web Crypto API to decrypt AES-CBC
-      const keyData = new TextEncoder().encode(GIDDA_API.secretKey.padEnd(32, '0').slice(0, 32));
-      const cryptoKey = await crypto.subtle.importKey(
-        'raw', keyData, { name: 'AES-CBC' }, false, ['decrypt']
-      );
-
-      // Decode base64
-      const encryptedBytes = Uint8Array.from(atob(encryptedString), c => c.charCodeAt(0));
-      
-      // First 16 bytes are IV, rest is ciphertext
-      const iv = encryptedBytes.slice(0, 16);
-      const ciphertext = encryptedBytes.slice(16);
-
-      const decryptedBuffer = await crypto.subtle.decrypt(
-        { name: 'AES-CBC', iv }, cryptoKey, ciphertext
-      );
-
-      decryptedValue = JSON.parse(new TextDecoder().decode(decryptedBuffer));
-      console.log('Decrypted value:', decryptedValue);
-    } catch (decryptError) {
-      console.warn('Decryption failed:', decryptError.message);
-      decryptedValue = null;
+    if (!encryptedString || typeof encryptedString !== 'string') {
+      throw new Error('No encrypted data found in response');
     }
 
-    // Extract houses from decrypted data
+    // Decrypt using AES-GCM
+    const decrypted = await decryptAESGCM(encryptedString, GIDDA_API.secretKey);
+    console.log('Decrypted data:', decrypted);
+
+    // Extract houses array from decrypted response
     let houses = [];
-    const source = decryptedValue || rawValue;
-    if (Array.isArray(source)) {
-      houses = source;
-    } else if (Array.isArray(source?.value)) {
-      houses = source.value;
-    } else if (Array.isArray(source?.items)) {
-      houses = source.items;
-    } else if (Array.isArray(source?.data)) {
-      houses = source.data;
-    } else if (Array.isArray(source?.houses)) {
-      houses = source.houses;
-    } else if (Array.isArray(source?.results)) {
-      houses = source.results;
+    if (Array.isArray(decrypted)) {
+      houses = decrypted;
+    } else if (Array.isArray(decrypted?.value)) {
+      houses = decrypted.value;
+    } else if (Array.isArray(decrypted?.items)) {
+      houses = decrypted.items;
+    } else if (Array.isArray(decrypted?.data)) {
+      houses = decrypted.data;
     }
-    console.log('Houses array:', houses.length, houses[0]);
+
+    console.log(`Houses found: ${houses.length}`, houses[0]);
 
     if (houses.length > 0) {
       allProperties = houses.map(mapGiddaProperty);
